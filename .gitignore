@@ -1,1 +1,4 @@
 venv
+chroma_langchain_db_
+uploaded_pdfs
+.env

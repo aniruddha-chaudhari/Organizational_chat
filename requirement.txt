@@ -13,3 +13,4 @@ chromadb
 beautifulsoup4
 sentence_transformers
 PyPDF2
+python-dotenv
