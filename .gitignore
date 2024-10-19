@@ -1,4 +1,8 @@
 venv
 chroma_langchain_db_
+<<<<<<< HEAD
 uploaded_pdfs
 .env
+=======
+uploaded_pdfs
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1

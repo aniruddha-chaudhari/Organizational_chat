@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from queue import Queue
 from threading import Thread
 import streamlit as st
@@ -5,12 +6,17 @@ import os
 from dotenv import load_dotenv
 import time
 from langchain_community.document_loaders import PyPDFLoader
+=======
+import os
+import time
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1
 from langchain_community.document_loaders import WebBaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_ollama.llms import OllamaLLM
+<<<<<<< HEAD
 from langchain_community.tools import TavilySearchResults
 from langchain_core.callbacks.base import BaseCallbackHandler
 from datetime import datetime
@@ -30,10 +36,21 @@ api_key = os.getenv('TAVILY_API_KEY')
 embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
 
 # Generate unique directory for vector database
+=======
+from datetime import datetime
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+
+# Initialize embeddings
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
+
+# Create a unique directory for storing the Chroma database
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 unique_directory = f"./chroma_langchain_db_/{timestamp}"
 os.makedirs(unique_directory, exist_ok=True)
 
+<<<<<<< HEAD
 # Callback handler for streaming token responses
 class StreamingCallbackHandler(BaseCallbackHandler):
     def __init__(self, container):
@@ -105,10 +122,45 @@ if not st.session_state.processing_complete and (uploaded_file or web_link):
             try:
                 # Create Chroma index
                 st.session_state.vectors = Chroma(
+=======
+# Initialize session state variables
+if "processing_complete" not in locals():
+    processing_complete = False
+if "vector" not in locals():
+    vector = None
+if "docs" not in locals():
+    docs = []
+
+# Get user input for the web link
+web_link = input("Enter a web link: ")
+
+if not processing_complete and web_link:
+    start = time.time()
+    docs = []
+
+    # Load documents from the provided web link
+    try:
+        loader = WebBaseLoader(web_link)
+        docs = loader.load()
+        print(f"Loaded {len(docs)} documents from the web link.")
+    except Exception as e:
+        print(f"Failed to load web content: {e}")
+
+    if docs:
+        # Split documents into manageable chunks
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=250)
+        final_documents = text_splitter.split_documents(docs)
+
+        if final_documents:
+            try:
+                # Initialize Chroma database and add documents
+                vectors = Chroma(
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1
                     collection_name="document_collection",
                     embedding_function=embeddings,
                     persist_directory=unique_directory,
                 )
+<<<<<<< HEAD
                 st.session_state.vectors.add_documents(final_documents)
                 st.success("Successfully created index")
                 loading_time = time.time() - start
@@ -124,6 +176,28 @@ if not st.session_state.processing_complete and (uploaded_file or web_link):
         )
 
 # Prompt template
+=======
+                vectors.add_documents(final_documents)
+                print("Successfully created index")
+                loading_time = time.time() - start
+                print(f"Loading time: {loading_time:.2f} seconds")
+                processing_complete = True
+            except Exception as e:
+                print(f"Failed to create Chroma index: {e}")
+        else:
+            print("No documents to process after splitting.")
+    else:
+        print("No documents loaded. Please provide a valid web link.")
+
+# Initialize the chatbot model
+llm = OllamaLLM(
+    model="llama3.1",
+    temperature=0.7,
+    streaming=True  # Enable streaming
+)
+
+# Set up the prompt for the AI assistant
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1
 prompt = ChatPromptTemplate.from_template(
     """
     You are a helpful AI assistant that provides detailed and comprehensive answers based on the given context.
@@ -146,6 +220,7 @@ prompt = ChatPromptTemplate.from_template(
     """
 )
 
+<<<<<<< HEAD
 # Define response queue for streaming tokens
 if "response_queue" not in st.session_state:
     st.session_state.response_queue = Queue()
@@ -223,3 +298,28 @@ if user_prompt:
     response_placeholder.markdown(response_text)
     response_time = time.time() - start
     st.write(f"Response time: {response_time:.2f} seconds")
+=======
+if processing_complete:
+    # Create retrieval and document chain
+    document_chain = create_stuff_documents_chain(llm, prompt)
+    retriever = vectors.as_retriever()
+    retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+    # Get user prompt for querying the chatbot
+    user_prompt = input("Ask a question: ")
+
+    if user_prompt:
+        start = time.time()
+        response = retrieval_chain.invoke({"input": user_prompt})
+        response_time = time.time() - start
+        print(response["answer"])
+        print(f"Response time: {response_time:.2f} seconds")
+
+        # Display similar documents
+        print("\nDocument similarity search results:")
+        for i, doc in enumerate(response["context"]):
+            print(doc.page_content)
+            print("--------------")
+else:
+    print("No documents processed yet. Please provide a valid web link.")
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1

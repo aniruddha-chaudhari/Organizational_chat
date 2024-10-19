@@ -11,7 +11,11 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_ollama.llms import OllamaLLM
+<<<<<<< HEAD:test.py
 from langchain_community.tools import TavilySearchResults
+=======
+
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1:app.py
 from langchain_core.callbacks.base import BaseCallbackHandler
 from datetime import datetime
 from langchain_chroma import Chroma
@@ -111,7 +115,11 @@ if not st.session_state.processing_complete and (uploaded_file or web_link):
         )
 
 
+<<<<<<< HEAD:test.py
 
+=======
+st.title("Chatbot")
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1:app.py
 # def get_llm(callback_handler):
 #     return OllamaLLM(
 #         model="llama3.1",
@@ -153,6 +161,7 @@ class StreamingCallbackHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         self.queue.put(token)
 
+<<<<<<< HEAD:test.py
 
 
 
@@ -217,3 +226,64 @@ if st.session_state.processing_complete:
 else:
     if user_prompt:
         st.warning("Please wait for the documents to be processed and indexed before asking questions.")
+=======
+if st.session_state.processing_complete:
+    document_chain = None
+    retriever = st.session_state.vectors.as_retriever()
+    
+    user_prompt = st.text_input("Ask a question")
+
+    if user_prompt:
+        start = time.time()
+        
+        response_placeholder = st.empty()
+        current_response = ""
+
+        while not st.session_state.response_queue.empty():
+            st.session_state.response_queue.get()
+        
+        stream_handler = StreamingCallbackHandler(st.session_state.response_queue)
+        
+        llm = OllamaLLM(
+            model="llama3.1",
+            temperature=0.7,
+            callbacks=[stream_handler]
+        )
+        
+        document_chain = create_stuff_documents_chain(llm, prompt)
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        
+        response_container = st.empty()
+        
+        def process_response():
+            response = retrieval_chain.invoke({
+                "input": user_prompt
+            })
+            st.session_state.response_queue.put(None)
+            return response
+        
+        thread = Thread(target=process_response)
+        thread.start()
+        
+        response_text = ""
+        while True:
+            if not st.session_state.response_queue.empty():
+                token = st.session_state.response_queue.get()
+                if token is None:  # End of response
+                    break
+                response_text += token
+                response_container.markdown(response_text + "▌")
+            time.sleep(0.01)  
+        
+       
+        response_container.markdown(response_text)
+        
+        response_time = time.time() - start
+        st.write(f"Response time: {response_time:.2f} seconds")
+
+        with st.expander("Document similarity search"):
+            for i, doc in enumerate(thread.response["context"]):
+                st.write(f"Relevant Document {i+1}:")
+                st.write(doc.page_content)
+                st.write("--------------")
+>>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1:app.py
