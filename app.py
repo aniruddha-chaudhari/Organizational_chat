@@ -11,11 +11,8 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_ollama.llms import OllamaLLM
-<<<<<<< HEAD:test.py
 from langchain_community.tools import TavilySearchResults
-=======
 
->>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1:app.py
 from langchain_core.callbacks.base import BaseCallbackHandler
 from datetime import datetime
 from langchain_chroma import Chroma
@@ -115,11 +112,8 @@ if not st.session_state.processing_complete and (uploaded_file or web_link):
         )
 
 
-<<<<<<< HEAD:test.py
 
-=======
 st.title("Chatbot")
->>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1:app.py
 # def get_llm(callback_handler):
 #     return OllamaLLM(
 #         model="llama3.1",
@@ -161,7 +155,7 @@ class StreamingCallbackHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         self.queue.put(token)
 
-<<<<<<< HEAD:test.py
+
 
 
 
@@ -226,7 +220,7 @@ if st.session_state.processing_complete:
 else:
     if user_prompt:
         st.warning("Please wait for the documents to be processed and indexed before asking questions.")
-=======
+
 if st.session_state.processing_complete:
     document_chain = None
     retriever = st.session_state.vectors.as_retriever()
@@ -286,4 +280,4 @@ if st.session_state.processing_complete:
                 st.write(f"Relevant Document {i+1}:")
                 st.write(doc.page_content)
                 st.write("--------------")
->>>>>>> e61b620be331813b2e85190ed70a8e2e811139c1:app.py
+
